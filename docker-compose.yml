@@ -2,19 +2,23 @@ version: "3.8"
 
 services:
   database:
+    env_file:
+      - path: ./backend/.env
     image: postgres:15
     container_name: flagit_db
     restart: always
     environment:
-      POSTGRES_USER: flag_user
-      POSTGRES_PASSWORD: flag_password
-      POSTGRES_DB: flagit_db
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_NAME}"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
+    env_file:
+      - path: ./backend/.env
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -22,14 +26,14 @@ services:
     depends_on:
       - database
     environment:
-      DATABASE_URL: "postgresql://flag_user:flag_password@database:5432/flagit_db?schema=public"
-      JWT_SECRET: "your-secret-key"
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "3000:3000"
     volumes:
       - ./backend:/app
       - /app/node_modules
-    command: ["sh", "-c", "npx prisma migrate deploy && npm run start:dev"]
+    command: ["sh", "-c", "npm run dev"]
 
 volumes:
   postgres_data:
